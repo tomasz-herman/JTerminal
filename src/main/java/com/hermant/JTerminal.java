@@ -1,18 +1,21 @@
 package com.hermant;
 
+import com.hermant.io.LineBufferedTerminalInputStream;
+import com.hermant.io.TerminalInputStream;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.PrintStream;
 
 public class JTerminal extends JScrollPane {
-    private TerminalInputStream tis;
+    private LineBufferedTerminalInputStream tis;
     private TerminalOutputStream tos;
     private int maxLines = 1000;
 
     private final JTextArea terminal = new JTextArea();
 
     public JTerminal() {
-        tis = new TerminalInputStream();
+        tis = new LineBufferedTerminalInputStream();
         tos = new TerminalOutputStream();
 
         setViewportView(terminal);
