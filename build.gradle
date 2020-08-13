@@ -1,0 +1,47 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+group 'com.hermant'
+version '1.0.0'
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+repositories {
+    mavenCentral()
+    maven {
+        url = uri('https://maven.pkg.github.com/tomasz-herman/WindowBuilder')
+        credentials {
+            username = "token"
+            password = "\u0033\u0038\u0038\u0063\u0034\u0034\u0062\u0039\u0037\u0034\u0032\u0035\u0065\u0061\u0036\u0065\u0064\u0066\u0031\u0065\u0030\u0033\u0039\u0032\u0066\u0063\u0064\u0031\u0064\u0065\u0031\u0039\u0036\u0039\u0038\u0064\u0064\u0039\u0039\u0061"
+        }
+    }
+}
+
+dependencies {
+    implementation 'com.hermant:windowbuilder:1.0.2'
+    implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.1'
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/tomasz-herman/JTerminal")
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+            }
+        }
+    }
+    publications {
+        gpr(MavenPublication) {
+            groupId 'com.hermant'
+            artifactId 'jterminal'
+            from(components.java)
+        }
+    }
+}
