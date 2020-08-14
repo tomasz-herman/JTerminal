@@ -85,7 +85,7 @@ public class TerminalOutputStream extends OutputStream {
         if(b=='\n'){
             synchronized (buffer){
                 bufferedLines++;
-                buffer.append(line.toString());
+                buffer.append(line);
                 line.setLength(0);
                 buffer.notify();
                 while(buffer.length() > BUFFER_AUTO_FLUSH_SIZE) {
@@ -116,7 +116,7 @@ public class TerminalOutputStream extends OutputStream {
         if(newLines > 0) {
             synchronized (buffer){
                 bufferedLines+= newLines;
-                buffer.append(line.toString());
+                buffer.append(line);
                 line.setLength(0);
                 buffer.notify();
                 while(buffer.length() > BUFFER_AUTO_FLUSH_SIZE) {
@@ -133,9 +133,8 @@ public class TerminalOutputStream extends OutputStream {
     @Override
     public void flush() {
         synchronized (buffer){
-            String s = line.toString();
-            buffer.append(s);
-            if(s.contains("\n"))bufferedLines++;
+            buffer.append(line);
+            if(line.toString().contains("\n"))bufferedLines++;
             line.setLength(0);
             buffer.notify();
         }
