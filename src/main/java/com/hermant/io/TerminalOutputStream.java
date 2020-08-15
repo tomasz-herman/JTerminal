@@ -135,7 +135,8 @@ public class TerminalOutputStream extends OutputStream {
         if(line.length() == 0) return;
         synchronized (buffer){
             buffer.append(line);
-            if(line.toString().contains("\n"))bufferedLines++;
+            bufferedLines +=
+                    line.toString().codePoints().filter(c -> c == '\n').count();
             line.setLength(0);
             buffer.notify();
         }
