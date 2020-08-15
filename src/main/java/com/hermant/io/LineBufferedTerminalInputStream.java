@@ -27,9 +27,7 @@ public class LineBufferedTerminalInputStream extends TerminalInputStream {
             line.add('\n');
             while(!line.isEmpty()) {
                 char c = line.remove();
-                //TODO: ThreadPool
-                // avoid to write to ostream form AWT Thread as it might cause deadlock
-                new Thread(() -> terminal.getTos().write(c)).start();
+                terminal.getTos().write(c);
                 buffer.add(c);
             }
         } else if(e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {

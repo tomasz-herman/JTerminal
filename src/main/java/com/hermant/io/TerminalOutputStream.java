@@ -36,6 +36,7 @@ public class TerminalOutputStream extends OutputStream {
                 if(elapsed > SKIP_TICKS || buffer.length() > BUFFER_AUTO_FLUSH_SIZE){
                     //update text area
                     lastUpdate = now;
+                    String s;
                     synchronized (buffer){
                         while(buffer.length() == 0) {
                             try {
@@ -44,17 +45,19 @@ public class TerminalOutputStream extends OutputStream {
                                 e.printStackTrace();
                             }
                         }
-                        try {
-                            SwingUtilities.invokeAndWait(() -> {
-                                appendLinesToTerminal(area);
-                                while(lines > MAX_LINES) {
-                                    detachLinesFromTerminal(area);
-                                }
-                            });
-                        } catch (InterruptedException | InvocationTargetException e) {
-                            e.printStackTrace();
-                        }
+                        s = buffer.toString();
+                        buffer.setLength(0);
                         buffer.notify();
+                    }
+                    try {
+                        SwingUtilities.invokeAndWait(() -> {
+                            appendLinesToTerminal(area, s);
+                            while(lines > MAX_LINES) {
+                                detachLinesFromTerminal(area);
+                            }
+                        });
+                    } catch (InterruptedException | InvocationTargetException e) {
+                        e.printStackTrace();
                     }
                 }
             }
@@ -70,10 +73,9 @@ public class TerminalOutputStream extends OutputStream {
         }
     }
 
-    private void appendLinesToTerminal(JTextArea area){
+    private void appendLinesToTerminal(JTextArea area, String s){
         try {
-            area.append(buffer.toString());
-            buffer.setLength(0);
+            area.append(s);
             lines += bufferedLines;
             bufferedLines = 0;
         } catch (Error ignored) { }

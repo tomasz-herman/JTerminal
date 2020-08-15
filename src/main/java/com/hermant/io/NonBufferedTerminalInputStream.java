@@ -15,21 +15,15 @@ public class NonBufferedTerminalInputStream extends TerminalInputStream {
     public void keyPressed(KeyEvent e) {
         if(e.getKeyCode() == KeyEvent.VK_ENTER){
             buffer.add('\n');
-            //TODO: ThreadPool
-            // avoid to write to ostream form AWT Thread as it might cause deadlock
-            new Thread(() -> terminal.getTos().write('\n')).start();
+            terminal.getTos().write('\n');
         } else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C){
             Signal.raise(new Signal("INT"));
         } else {
             char c = e.getKeyChar();
             if(c >= 32 && c < 127) {
                 buffer.add(c);
-                //TODO: ThreadPool
-                // avoid to write to ostream form AWT Thread as it might cause deadlock
-                new Thread(() -> {
-                    terminal.getTos().write(c);
-                    terminal.getTos().flush();
-                }).start();
+                terminal.getTos().write(c);
+                terminal.getTos().flush();
             }
 
         }
