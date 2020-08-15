@@ -1,6 +1,6 @@
 package com.hermant.io;
 
-import sun.misc.Signal;
+import com.hermant.JTerminal;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -15,6 +15,11 @@ public abstract class TerminalInputStream extends InputStream implements KeyList
     private final static int BUFFER_SIZE = 65536;
 
     protected final BlockingQueue<Character> buffer = new ArrayBlockingQueue<>(BUFFER_SIZE);
+    protected final JTerminal terminal;
+
+    protected TerminalInputStream(JTerminal terminal) {
+        this.terminal = terminal;
+    }
 
     @Override
     public void reset(){

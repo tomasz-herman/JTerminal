@@ -1,6 +1,7 @@
 package com.hermant;
 
 import com.hermant.io.LineBufferedTerminalInputStream;
+import com.hermant.io.NonBufferedTerminalInputStream;
 import com.hermant.io.TerminalInputStream;
 import com.hermant.io.TerminalOutputStream;
 
@@ -9,14 +10,14 @@ import java.awt.*;
 import java.io.PrintStream;
 
 public class JTerminal extends JScrollPane {
-    private LineBufferedTerminalInputStream tis;
+    private TerminalInputStream tis;
     private TerminalOutputStream tos;
     private int verticalScrollBarMaximumValue;
 
     private final JTextArea terminal = new JTextArea();
 
-    public JTerminal() {
-        tis = new LineBufferedTerminalInputStream();
+    public JTerminal(boolean bufferedInStream) {
+        tis = bufferedInStream ? new LineBufferedTerminalInputStream(this) : new NonBufferedTerminalInputStream(this);
         tos = new TerminalOutputStream(terminal);
 
         setViewportView(terminal);

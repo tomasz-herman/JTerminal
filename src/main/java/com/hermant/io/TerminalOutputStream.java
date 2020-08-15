@@ -132,6 +132,7 @@ public class TerminalOutputStream extends OutputStream {
 
     @Override
     public void flush() {
+        if(line.length() == 0) return;
         synchronized (buffer){
             buffer.append(line);
             if(line.toString().contains("\n"))bufferedLines++;
