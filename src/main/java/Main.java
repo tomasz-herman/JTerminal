@@ -11,7 +11,6 @@ public class Main {
         JTerminal terminal = new JTerminal(false);
         new WindowBuilder()
             .setContentPane(terminal)
-            .setSize(1280, 720)
             .buildFrame();
         terminal.bindToSystemStreams();
         Executors.newScheduledThreadPool(1).scheduleAtFixedRate(
