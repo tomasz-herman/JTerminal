@@ -50,6 +50,11 @@ public class JTerminal extends JScrollPane {
         setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_ALWAYS);
         verticalScrollBarMaximumValue = getVerticalScrollBar().getMaximum();
         getVerticalScrollBar().addAdjustmentListener(e -> {
+            // Allow to scroll only by fixed length, which is font height:
+            int val = e.getValue();
+            if(terminal.getHeight() != 0)
+                e.getAdjustable().setValue(val - val % (terminal.getFontMetrics(terminal.getFont()).getHeight()));
+            //If on the bottom just make sure it scrolled to the end
             if ((verticalScrollBarMaximumValue - e.getAdjustable().getMaximum()) == 0) return;
             if (e.getValue() != e.getAdjustable().getMaximum() + e.getAdjustable().getVisibleAmount()) return;
             e.getAdjustable().setValue(e.getAdjustable().getMaximum());
@@ -60,6 +65,8 @@ public class JTerminal extends JScrollPane {
         terminal.setLineWrap(true);
         terminal.setFont(getDefaultFont(24));
         terminal.addKeyListener(tis);
+
+        getVerticalScrollBar().setUnitIncrement(100);
 
         setBorder(createEmptyBorder());
         theme.apply(this);
