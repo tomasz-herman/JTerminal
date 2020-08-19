@@ -6,21 +6,26 @@ import com.hermant.io.TerminalInputStream;
 import com.hermant.io.TerminalOutputStream;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.font.TextAttribute;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Map;
 
 import static javax.swing.BorderFactory.createEmptyBorder;
 
 public class JTerminal extends JScrollPane {
 
-    private static final String DEFAULT_FONT_NAME = "NotoMono-Regular.ttf";
+    private static final String DEFAULT_FONT_NAME = "FiraCode-Regular.ttf";
     private static final Font DEFAULT_FONT;
 
     static {
@@ -38,7 +43,7 @@ public class JTerminal extends JScrollPane {
     private final TerminalOutputStream tos;
     private int verticalScrollBarMaximumValue;
 
-    private Theme theme = new Theme(DEFAULT_DARK);
+    private Theme theme = new Theme(BREEZE_DARK);
 
     private final JTextArea terminal = new JTextArea(24, 80);
 
@@ -65,8 +70,6 @@ public class JTerminal extends JScrollPane {
         terminal.setLineWrap(true);
         terminal.setFont(getDefaultFont(24));
         terminal.addKeyListener(tis);
-
-        getVerticalScrollBar().setUnitIncrement(100);
 
         setBorder(createEmptyBorder());
         theme.apply(this);
@@ -99,6 +102,13 @@ public class JTerminal extends JScrollPane {
 
     public static Font getDefaultFont(int size) {
         return DEFAULT_FONT.deriveFont((float)size);
+    }
+
+    public void enableFontLigatures() {
+        @SuppressWarnings("unchecked") // It's always Map<TextAttribute, Object>
+        Map<TextAttribute, Object> attributes = (Map<TextAttribute, Object>) terminal.getFont().getAttributes();
+        attributes.put(TextAttribute.LIGATURES, TextAttribute.LIGATURES_ON);
+        terminal.setFont(DEFAULT_FONT.deriveFont(attributes));
     }
 
     private static final Theme DEFAULT_LIGHT = new Theme(
