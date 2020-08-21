@@ -1,6 +1,6 @@
-package com.hermant.io;
+package com.hermant.terminal.io;
 
-import com.hermant.JTerminal;
+import com.hermant.terminal.JTerminal;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;

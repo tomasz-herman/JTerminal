@@ -1,20 +1,16 @@
-package com.hermant;
+package com.hermant.terminal;
 
-import com.hermant.io.LineBufferedTerminalInputStream;
-import com.hermant.io.NonBufferedTerminalInputStream;
-import com.hermant.io.TerminalInputStream;
-import com.hermant.io.TerminalOutputStream;
+import com.hermant.terminal.io.LineBufferedTerminalInputStream;
+import com.hermant.terminal.io.NonBufferedTerminalInputStream;
+import com.hermant.terminal.io.TerminalInputStream;
+import com.hermant.terminal.io.TerminalOutputStream;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.font.TextAttribute;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,8 +39,6 @@ public class JTerminal extends JScrollPane {
     private final TerminalOutputStream tos;
     private int verticalScrollBarMaximumValue;
 
-    private Theme theme = new Theme(BREEZE_DARK);
-
     private final JTextArea terminal = new JTextArea(24, 80);
 
     public JTerminal(boolean bufferedInStream) {
@@ -72,7 +66,6 @@ public class JTerminal extends JScrollPane {
         terminal.addKeyListener(tis);
 
         setBorder(createEmptyBorder());
-        theme.apply(this);
 
         disableArrowKeys();
         terminal.setEditable(false);
@@ -104,142 +97,14 @@ public class JTerminal extends JScrollPane {
         return DEFAULT_FONT.deriveFont((float)size);
     }
 
+    /**
+     * Might cause performance degradation.
+     */
     public void enableFontLigatures() {
         @SuppressWarnings("unchecked") // It's always Map<TextAttribute, Object>
         Map<TextAttribute, Object> attributes = (Map<TextAttribute, Object>) terminal.getFont().getAttributes();
         attributes.put(TextAttribute.LIGATURES, TextAttribute.LIGATURES_ON);
         terminal.setFont(DEFAULT_FONT.deriveFont(attributes));
-    }
-
-    private static final Theme DEFAULT_LIGHT = new Theme(
-            getDefaultFont(24),
-            new Color(51, 51, 51),
-            new Color(255, 255, 255),
-            new Color(184, 207, 229),
-            new Color(51, 51, 51),
-            new Color(238, 238, 238),
-            new Color(188, 203, 218)
-    );
-    private static final Theme DEFAULT_DARK = new Theme(
-            getDefaultFont(24),
-            new Color(204, 204, 204),
-            new Color(0, 0, 0),
-            new Color(5, 37, 68),
-            new Color(204, 204, 204),
-            new Color(12, 12, 12),
-            new Color(64, 112, 158)
-    );
-//    private static final Theme BREEZE_LIGHT = new Theme();
-    private static final Theme BREEZE_DARK = new Theme(
-            getDefaultFont(24),
-            new Color(239, 240, 241),
-            new Color(49, 54, 59),
-            new Color(61, 174, 233),
-            new Color(252, 252, 252),
-            new Color(189, 195, 199),
-            new Color(61, 174, 233)
-);
-
-    public static class Theme {
-
-        private Font font;
-        private Color scrollArea;
-        private Color scrollBar;
-        private Color foreground;
-        private Color background;
-        private Color highlight;
-        private Color selected;
-
-        private Theme(Font font, Color foreground, Color background, Color highlight, Color selected, Color scrollArea, Color scrollBar) {
-            this.font = font;
-            this.foreground = foreground;
-            this.background = background;
-            this.highlight = highlight;
-            this.selected = selected;
-            this.scrollArea = scrollArea;
-            this.scrollBar = scrollBar;
-        }
-
-        private Theme(Theme other) {
-            this.font = other.font;
-            this.foreground = other.foreground;
-            this.background = other.background;
-            this.highlight = other.highlight;
-            this.selected = other.selected;
-            this.scrollArea = other.scrollArea;
-            this.scrollBar = other.scrollBar;
-        }
-
-        public Theme(JTerminal jTerminal) {
-            this.font = jTerminal.theme.font;
-            this.foreground = jTerminal.theme.foreground;
-            this.background = jTerminal.theme.background;
-            this.highlight = jTerminal.theme.highlight;
-            this.selected = jTerminal.theme.selected;
-        }
-
-        public void apply(JTerminal jTerminal){
-            jTerminal.terminal.setFont(font);
-            jTerminal.setBackground(background);
-            jTerminal.setForeground(foreground);
-            jTerminal.terminal.setForeground(foreground);
-            jTerminal.terminal.setBackground(background);
-            jTerminal.getVerticalScrollBar().setBackground(scrollArea);
-            jTerminal.getVerticalScrollBar().setUI(new BasicScrollBarUI() {
-                @Override
-                protected void configureScrollBarColors() {
-                    this.thumbColor = scrollBar;
-                }
-            });
-            jTerminal.terminal.setSelectionColor(highlight);
-            jTerminal.terminal.setSelectedTextColor(selected);
-            jTerminal.theme = this;
-        }
-
-        public Font getFont() {
-            return font;
-        }
-
-        public Theme setFont(Font font) {
-            this.font = font;
-            return this;
-        }
-
-        public Color getForeground() {
-            return foreground;
-        }
-
-        public Theme setForeground(Color foreground) {
-            this.foreground = foreground;
-            return this;
-        }
-
-        public Color getBackground() {
-            return background;
-        }
-
-        public Theme setBackground(Color background) {
-            this.background = background;
-            return this;
-        }
-
-        public Color getHighlight() {
-            return highlight;
-        }
-
-        public Theme setHighlight(Color highlight) {
-            this.highlight = highlight;
-            return this;
-        }
-
-        public Color getSelected() {
-            return selected;
-        }
-
-        public Theme setSelected(Color selected) {
-            this.selected = selected;
-            return this;
-        }
     }
 
     /**

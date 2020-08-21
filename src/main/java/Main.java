@@ -1,4 +1,4 @@
-import com.hermant.JTerminal;
+import com.hermant.terminal.JTerminal;
 import com.hermant.swing.WindowBuilder;
 
 import java.util.Random;
@@ -16,6 +16,5 @@ public class Main {
         Executors.newScheduledThreadPool(1).scheduleAtFixedRate(
                 () -> System.out.print(UUID.randomUUID().toString() + (new Random().nextDouble() > 0.1 ? "" : '\n')),
                 0, 500, TimeUnit.MILLISECONDS);
-        terminal.enableFontLigatures();
     }
 }

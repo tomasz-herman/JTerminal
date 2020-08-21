@@ -1,4 +1,4 @@
-package com.hermant.io;
+package com.hermant.terminal.io;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;

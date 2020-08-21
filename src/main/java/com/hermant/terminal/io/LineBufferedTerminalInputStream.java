@@ -1,6 +1,6 @@
-package com.hermant.io;
+package com.hermant.terminal.io;
 
-import com.hermant.JTerminal;
+import com.hermant.terminal.JTerminal;
 import sun.misc.Signal;
 
 import java.awt.event.KeyEvent;
