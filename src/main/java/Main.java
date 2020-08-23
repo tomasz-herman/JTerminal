@@ -1,10 +1,9 @@
 import com.hermant.terminal.JTerminal;
 import com.hermant.swing.WindowBuilder;
 
-import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class Main {
     public static void main(String[] args) {
@@ -12,9 +11,37 @@ public class Main {
         new WindowBuilder()
             .setContentPane(terminal)
             .buildFrame();
-        terminal.bindToSystemStreams();
-        Executors.newScheduledThreadPool(1).scheduleAtFixedRate(
-                () -> System.out.print(UUID.randomUUID().toString() + (new Random().nextDouble() > 0.1 ? "" : '\n')),
-                0, 500, TimeUnit.MILLISECONDS);
+        try {
+            Process p = new ProcessBuilder()
+                    .command(new String[] {"/usr/bin/script", "-qfc", "/usr/bin/bash", "/dev/null"})
+                    .start();
+            new Thread(() -> {
+                InputStream in = p.getInputStream();
+                int read;
+                try {
+                    while((read = in.read()) != -1) {
+                        terminal.getTos().write(read);
+                        terminal.getTos().flush();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+            new Thread(() -> {
+                OutputStream out = p.getOutputStream();
+                int read;
+                while((read = terminal.getTis().read()) != -1) {
+                    try {
+                        out.write(read);
+                        out.flush();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+            p.waitFor();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

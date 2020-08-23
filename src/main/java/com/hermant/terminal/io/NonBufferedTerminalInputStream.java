@@ -7,23 +7,30 @@ import java.awt.event.KeyEvent;
 
 public class NonBufferedTerminalInputStream extends TerminalInputStream {
 
-    public NonBufferedTerminalInputStream(JTerminal terminal) {
-        super(terminal);
+    public NonBufferedTerminalInputStream(JTerminal terminal, boolean echoToTos) {
+        super(terminal, echoToTos);
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
         if(e.getKeyCode() == KeyEvent.VK_ENTER){
             buffer.add('\n');
-            terminal.getTos().write('\n');
+            if(echoToTos) terminal.getTos().write('\n');
         } else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C){
-            Signal.raise(new Signal("INT"));
+            if(echoToTos) Signal.raise(new Signal("SIGINT"));
+            else buffer.add('\3');
+        } else if(e.getKeyCode() == KeyEvent.VK_BACK_SPACE){
+            buffer.add('\10');
+        } else if(e.getKeyCode() == KeyEvent.VK_ESCAPE){
+            buffer.add('\33');
         } else {
             char c = e.getKeyChar();
             if(c >= 32 && c < 127) {
                 buffer.add(c);
-                terminal.getTos().write(c);
-                terminal.getTos().flush();
+                if(echoToTos) {
+                    terminal.getTos().write(c);
+                    terminal.getTos().flush();
+                }
             }
 
         }

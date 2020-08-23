@@ -2,10 +2,13 @@ package com.hermant.terminal.io;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 
 public class TerminalOutputStream extends OutputStream {
+
+    private final JTextArea area;
 
     private final StringBuilder line = new StringBuilder(1024);
     private final StringBuilder buffer = new StringBuilder(8192);
@@ -23,6 +26,7 @@ public class TerminalOutputStream extends OutputStream {
     private final long SKIP_TICKS = 1000000000 / FRAMES_PER_SECOND;
 
     public TerminalOutputStream(JTextArea area) {
+        this.area = area;
         Thread updater = getUpdaterThread(area);
         updater.start();
     }
@@ -83,21 +87,43 @@ public class TerminalOutputStream extends OutputStream {
 
     @Override
     public void write(int b) {
-        line.append((char)b);
-        if(b=='\n'){
-            synchronized (buffer){
-                bufferedLines++;
-                buffer.append(line);
-                line.setLength(0);
-                buffer.notify();
-                while(buffer.length() > BUFFER_AUTO_FLUSH_SIZE) {
-                    try {
-                        buffer.wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+        if(b < 32) {
+            if(b=='\n'){
+                line.append((char)b);
+                synchronized (buffer){
+                    bufferedLines++;
+                    buffer.append(line);
+                    line.setLength(0);
+                    buffer.notify();
+                    while(buffer.length() > BUFFER_AUTO_FLUSH_SIZE) {
+                        try {
+                            buffer.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
+            else if(b=='\10') {
+                if(line.length() > 0) {
+                    System.out.println("wrong1");
+                    line.deleteCharAt(line.length() - 1);
+                } else synchronized (buffer) {
+                    if(buffer.length() > 0) {
+                        System.out.println("wrong2");
+                        buffer.deleteCharAt(buffer.length() - 1);
+                    } else {
+                        Document doc = area.getDocument();
+                        try {
+                            doc.remove(doc.getLength() - 1, 1);
+                        } catch (BadLocationException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        } else {
+            line.append((char)b);
         }
     }
 

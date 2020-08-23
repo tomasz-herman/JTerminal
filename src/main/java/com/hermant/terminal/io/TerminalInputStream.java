@@ -16,9 +16,11 @@ public abstract class TerminalInputStream extends InputStream implements KeyList
 
     protected final BlockingQueue<Character> buffer = new ArrayBlockingQueue<>(BUFFER_SIZE);
     protected final JTerminal terminal;
+    protected boolean echoToTos;
 
-    protected TerminalInputStream(JTerminal terminal) {
+    protected TerminalInputStream(JTerminal terminal, boolean echoToTos) {
         this.terminal = terminal;
+        this.echoToTos = echoToTos;
     }
 
     @Override

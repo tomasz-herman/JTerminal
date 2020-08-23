@@ -9,12 +9,11 @@ import javax.swing.*;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.font.TextAttribute;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.Map;
 
 import static javax.swing.BorderFactory.createEmptyBorder;
@@ -42,7 +41,9 @@ public class JTerminal extends JScrollPane {
     private final JTextArea terminal = new JTextArea(24, 80);
 
     public JTerminal(boolean bufferedInStream) {
-        tis = bufferedInStream ? new LineBufferedTerminalInputStream(this) : new NonBufferedTerminalInputStream(this);
+        tis = bufferedInStream ?
+                new LineBufferedTerminalInputStream(this, false):
+                new NonBufferedTerminalInputStream(this, false);
         tos = new TerminalOutputStream(terminal);
 
         setViewportView(terminal);
@@ -75,7 +76,26 @@ public class JTerminal extends JScrollPane {
         String[] keys = {"UP", "DOWN", "LEFT", "RIGHT", "HOME", "ENTER"};
         for (String key : keys) {
             terminal.getInputMap().put(KeyStroke.getKeyStroke(key), "none");
+            getInputMap().put(KeyStroke.getKeyStroke(key), "none");
+            getVerticalScrollBar().getInputMap().put(KeyStroke.getKeyStroke(key), "none");
         }
+        ActionMap am = getActionMap();
+        am.put("scrollDown", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) { }
+        });
+        am.put("scrollUp", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) { }
+        });
+        am.put("unitScrollDown", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) { }
+        });
+        am.put("unitScrollUp", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) { }
+        });
     }
 
     public TerminalInputStream getTis() {
@@ -90,7 +110,7 @@ public class JTerminal extends JScrollPane {
         System.setIn(tis);
         PrintStream printStream = new PrintStream(tos);
         System.setOut(printStream);
-//        System.setErr(printStream);
+        System.setErr(printStream);
     }
 
     public static Font getDefaultFont(int size) {
@@ -105,6 +125,26 @@ public class JTerminal extends JScrollPane {
         Map<TextAttribute, Object> attributes = (Map<TextAttribute, Object>) terminal.getFont().getAttributes();
         attributes.put(TextAttribute.LIGATURES, TextAttribute.LIGATURES_ON);
         terminal.setFont(DEFAULT_FONT.deriveFont(attributes));
+    }
+
+    public void setFont(Font font) {
+        terminal.setFont(font);
+    }
+
+    public void setTextColor(Color color) {
+        terminal.setForeground(color);
+    }
+
+    public void setBackgroundColor(Color color) {
+        terminal.setBackground(color);
+    }
+
+    public void setSelectedTextColor(Color color) {
+        terminal.setSelectedTextColor(color);
+    }
+
+    public void setSelectionColor(Color color) {
+        terminal.setSelectionColor(color);
     }
 
     /**
