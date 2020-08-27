@@ -40,6 +40,7 @@ public class Main {
                 }
             }).start();
             p.waitFor();
+            p.destroy();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

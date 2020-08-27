@@ -68,29 +68,25 @@ public class JTerminal extends JScrollPane {
         terminal.setFont(getDefaultFont(24));
         terminal.addKeyListener(tis);
 
-        setBorder(createEmptyBorder());
         addComponentListener(new ComponentListener() {
             @Override
             public void componentResized(ComponentEvent e) {
-                int height = e.getComponent().getHeight();
+                int height = e.getComponent().getHeight()
+                        - getBorder().getBorderInsets(JTerminal.this).bottom
+                        - getBorder().getBorderInsets(JTerminal.this).top;
+                System.out.println();
                 int bottom = height % (terminal.getFontMetrics(terminal.getFont()).getHeight());
                 terminal.setBorder(createEmptyBorder(0, 0, bottom, 0));
             }
 
             @Override
-            public void componentMoved(ComponentEvent e) {
-
-            }
+            public void componentMoved(ComponentEvent e) { }
 
             @Override
-            public void componentShown(ComponentEvent e) {
-
-            }
+            public void componentShown(ComponentEvent e) { }
 
             @Override
-            public void componentHidden(ComponentEvent e) {
-
-            }
+            public void componentHidden(ComponentEvent e) { }
         });
 
         disableArrowKeys();
@@ -140,6 +136,10 @@ public class JTerminal extends JScrollPane {
 
     public static Font getDefaultFont(int size) {
         return DEFAULT_FONT.deriveFont((float)size);
+    }
+
+    public void removeBorder() {
+        setBorder(createEmptyBorder());
     }
 
     /**

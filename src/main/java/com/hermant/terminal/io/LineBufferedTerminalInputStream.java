@@ -34,7 +34,7 @@ public class LineBufferedTerminalInputStream extends TerminalInputStream {
             if(!line.isEmpty()) line.removeLast();
             else buffer.add('\10');
         } else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C){
-            if(echoToTos) Signal.raise(new Signal("SIGINT"));
+            if(echoToTos) Signal.raise(new Signal("INT"));
             else buffer.add('\3');
         } else {
             char c = e.getKeyChar();

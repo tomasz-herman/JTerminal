@@ -17,7 +17,7 @@ public class NonBufferedTerminalInputStream extends TerminalInputStream {
             buffer.add('\n');
             if(echoToTos) terminal.getTos().write('\n');
         } else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C){
-            if(echoToTos) Signal.raise(new Signal("SIGINT"));
+            if(echoToTos) Signal.raise(new Signal("INT"));
             else buffer.add('\3');
         } else if(e.getKeyCode() == KeyEvent.VK_BACK_SPACE){
             buffer.add('\10');
