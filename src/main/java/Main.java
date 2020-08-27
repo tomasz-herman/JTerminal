@@ -7,7 +7,7 @@ import java.io.OutputStream;
 
 public class Main {
     public static void main(String[] args) {
-        JTerminal terminal = new JTerminal(false);
+        JTerminal terminal = new JTerminal();
         new WindowBuilder()
             .setContentPane(terminal)
             .buildFrame();

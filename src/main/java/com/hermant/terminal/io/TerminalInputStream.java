@@ -72,4 +72,11 @@ public abstract class TerminalInputStream extends InputStream implements KeyList
     @Override
     public void keyReleased(KeyEvent e) { }
 
+    public boolean isEchoToTos() {
+        return echoToTos;
+    }
+
+    public void setEchoToTos(boolean echoToTos) {
+        this.echoToTos = echoToTos;
+    }
 }

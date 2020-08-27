@@ -9,9 +9,7 @@ import javax.swing.*;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
+import java.awt.event.*;
 import java.awt.font.TextAttribute;
 import java.io.*;
 import java.util.Map;
@@ -40,10 +38,14 @@ public class JTerminal extends JScrollPane {
 
     private final JTextArea terminal = new JTextArea(24, 80);
 
-    public JTerminal(boolean bufferedInStream) {
+    public JTerminal() {
+        this(false, false);
+    }
+
+    public JTerminal(boolean bufferedInStream, boolean echoToTos) {
         tis = bufferedInStream ?
-                new LineBufferedTerminalInputStream(this, false):
-                new NonBufferedTerminalInputStream(this, false);
+                new LineBufferedTerminalInputStream(this, echoToTos):
+                new NonBufferedTerminalInputStream(this, echoToTos);
         tos = new TerminalOutputStream(terminal);
 
         setViewportView(terminal);
@@ -67,6 +69,29 @@ public class JTerminal extends JScrollPane {
         terminal.addKeyListener(tis);
 
         setBorder(createEmptyBorder());
+        addComponentListener(new ComponentListener() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                int height = e.getComponent().getHeight();
+                int bottom = height % (terminal.getFontMetrics(terminal.getFont()).getHeight());
+                terminal.setBorder(createEmptyBorder(0, 0, bottom, 0));
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent e) {
+
+            }
+
+            @Override
+            public void componentShown(ComponentEvent e) {
+
+            }
+
+            @Override
+            public void componentHidden(ComponentEvent e) {
+
+            }
+        });
 
         disableArrowKeys();
         terminal.setEditable(false);
@@ -127,7 +152,7 @@ public class JTerminal extends JScrollPane {
         terminal.setFont(DEFAULT_FONT.deriveFont(attributes));
     }
 
-    public void setFont(Font font) {
+    public void setTerminalFont(Font font) {
         terminal.setFont(font);
     }
 
