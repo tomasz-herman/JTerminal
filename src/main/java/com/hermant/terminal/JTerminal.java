@@ -32,8 +32,8 @@ public class JTerminal extends JScrollPane {
         DEFAULT_FONT = temp;
     }
 
-    private final TerminalInputStream tis;
-    private final TerminalOutputStream tos;
+    private TerminalInputStream tis;
+    private TerminalOutputStream tos;
     private int verticalScrollBarMaximumValue;
 
     private final JTextArea terminal = new JTextArea(24, 80);
@@ -43,12 +43,35 @@ public class JTerminal extends JScrollPane {
     }
 
     public JTerminal(boolean bufferedInStream, boolean echoToTos) {
+        createStreams(bufferedInStream, echoToTos);
+        setupTerminal();
+        enableSmartScroll();
+        enableAutoBorder();
+        disableArrowKeys();
+    }
+
+    private void setupTerminal() {
+        setViewportView(terminal);
+        terminal.setLineWrap(true);
+        terminal.setFont(getDefaultFont(24));
+        terminal.addKeyListener(tis);
+        terminal.setEditable(false);
+        terminal.getCaret().setVisible(true);
+    }
+
+    private void createStreams(boolean bufferedInStream, boolean echoToTos) {
         tis = bufferedInStream ?
                 new LineBufferedTerminalInputStream(this, echoToTos):
                 new NonBufferedTerminalInputStream(this, echoToTos);
         tos = new TerminalOutputStream(terminal);
+    }
 
-        setViewportView(terminal);
+    /**
+     * Smart scroll does two things.</br>
+     * It disables scrolling to the appended text, when the scrollbar is not at the bottom.</br>
+     * It aligns scrollbar with the lines of the terminal.
+     */
+    private void enableSmartScroll() {
         setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_ALWAYS);
         verticalScrollBarMaximumValue = getVerticalScrollBar().getMaximum();
         getVerticalScrollBar().addAdjustmentListener(e -> {
@@ -63,18 +86,19 @@ public class JTerminal extends JScrollPane {
             verticalScrollBarMaximumValue = getVerticalScrollBar().getMaximum();
         });
         new SmartScroller(this);
+    }
 
-        terminal.setLineWrap(true);
-        terminal.setFont(getDefaultFont(24));
-        terminal.addKeyListener(tis);
-
+    /**
+     * Auto border is applied to the terminal every time the component is resized.
+     * It ensures that the bottom of the terminal is always aligned with the last line.
+     */
+    private void enableAutoBorder() {
         addComponentListener(new ComponentListener() {
             @Override
             public void componentResized(ComponentEvent e) {
                 int height = e.getComponent().getHeight()
                         - getBorder().getBorderInsets(JTerminal.this).bottom
                         - getBorder().getBorderInsets(JTerminal.this).top;
-                System.out.println();
                 int bottom = height % (terminal.getFontMetrics(terminal.getFont()).getHeight());
                 terminal.setBorder(createEmptyBorder(0, 0, bottom, 0));
             }
@@ -88,9 +112,6 @@ public class JTerminal extends JScrollPane {
             @Override
             public void componentHidden(ComponentEvent e) { }
         });
-
-        disableArrowKeys();
-        terminal.setEditable(false);
     }
 
     private void disableArrowKeys() {

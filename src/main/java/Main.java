@@ -40,7 +40,7 @@ public class Main {
                 }
             }).start();
             p.waitFor();
-            p.destroy();
+            Runtime.getRuntime().addShutdownHook(new Thread(p::destroy));
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
