@@ -18,8 +18,7 @@ import static javax.swing.BorderFactory.createEmptyBorder;
 
 public class JTerminal extends JScrollPane {
 
-    private static final String DEFAULT_FONT_NAME = "FiraCode-Regular.ttf";
-    private static final FontProvider DEFAULT_FONT_PROVIDER = new FontProvider(DEFAULT_FONT_NAME);
+    private static final FontProvider DEFAULT_FONT_PROVIDER = new FontProvider(FontProvider.INCONSOLATA);
 
     private TerminalInputStream tis;
     private TerminalOutputStream tos;
