@@ -27,7 +27,7 @@ public class JTerminal extends JScrollPane {
     private int verticalScrollBarMaximumValue;
     private final TerminalController controller;
 
-    private final JTextArea terminal = new JTextArea(24, 80);
+    private final JTextArea terminal = new JTextArea(25, 80);
 
     public JTerminal() {
         this(false, false);
@@ -48,6 +48,7 @@ public class JTerminal extends JScrollPane {
         terminal.setFont(getDefaultFont(24));
         terminal.addKeyListener(tis);
         terminal.setEditable(false);
+        terminal.setCaret(new TerminalCaret());
         terminal.getCaret().setVisible(true);
     }
 
@@ -173,6 +174,7 @@ public class JTerminal extends JScrollPane {
 
     public void setTextColor(Color color) {
         terminal.setForeground(color);
+        terminal.setCaretColor(color);
     }
 
     public void setBackgroundColor(Color color) {
