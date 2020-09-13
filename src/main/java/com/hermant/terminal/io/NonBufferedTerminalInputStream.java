@@ -39,6 +39,9 @@ public class NonBufferedTerminalInputStream extends TerminalInputStream {
             buffer.add('\33');
             buffer.add('[');
             buffer.add('D');
+        } else if(e.getKeyCode() == KeyEvent.VK_TAB){
+            buffer.add('\t');
+            e.consume();
         } else {
             char c = e.getKeyChar();
             if(c >= 32 && c < 127) {

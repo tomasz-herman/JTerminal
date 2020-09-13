@@ -3,10 +3,7 @@ package com.hermant.terminal.io;
 import com.hermant.terminal.JTerminal;
 import com.hermant.terminal.TerminalController;
 
-import javax.swing.*;
-import javax.swing.text.BadLocationException;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
 
 public class TerminalOutputStream extends OutputStream {
 
@@ -16,9 +13,6 @@ public class TerminalOutputStream extends OutputStream {
     private final StringBuilder buffer = new StringBuilder(8192);
 
     private char[] buff = new char[4096];
-
-    private int lines = 0;
-    private int bufferedLines = 0;
 
     private static final int MAX_LINES = 16384;
     private static final int TRUNK = 4096;
@@ -55,45 +49,22 @@ public class TerminalOutputStream extends OutputStream {
                         buffer.setLength(0);
                         buffer.notify();
                     }
-                    try {
-                        SwingUtilities.invokeAndWait(() -> {
-                            controller.append(s);
-                            while(controller.getLines() > MAX_LINES) {
-                                controller.detach(TRUNK);
-                            }
-                        });
-                    } catch (InterruptedException | InvocationTargetException e) {
-                        e.printStackTrace();
+                    controller.append(s);
+                    while(controller.getLines() > MAX_LINES) {
+                        controller.detach(TRUNK);
                     }
                 }
             }
         });
     }
 
-    private void detachLinesFromTerminal(JTextArea area){
-        try {
-            area.getDocument().remove(0, area.getLineEndOffset(TRUNK - 1));
-            lines -= TRUNK;
-        } catch (BadLocationException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void appendLinesToTerminal(JTextArea area, String s){
-        try {
-            area.append(s);
-            lines += bufferedLines;
-            bufferedLines = 0;
-        } catch (Error ignored) { }
-    }
-
     @Override
     public void write(int b) {
         if(b < 32) {
             if(b=='\n'){
+                controller.moveCaretToLineEnd();
                 line.append((char)b);
                 synchronized (buffer){
-                    bufferedLines++;
                     buffer.append(line);
                     line.setLength(0);
                     buffer.notify();
@@ -139,7 +110,6 @@ public class TerminalOutputStream extends OutputStream {
         line.append(buff, 0, len);
         if(newLines > 0) {
             synchronized (buffer){
-                bufferedLines+= newLines;
                 buffer.append(line);
                 line.setLength(0);
                 buffer.notify();
@@ -159,10 +129,9 @@ public class TerminalOutputStream extends OutputStream {
         if(line.length() == 0) return;
         synchronized (buffer){
             buffer.append(line);
-            bufferedLines +=
-                    line.toString().codePoints().filter(c -> c == '\n').count();
             line.setLength(0);
-            buffer.notify();
+            controller.append(buffer.toString());
+            buffer.setLength(0);
         }
     }
 }

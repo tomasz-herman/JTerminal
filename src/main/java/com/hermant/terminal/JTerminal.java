@@ -13,6 +13,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.font.TextAttribute;
 import java.io.*;
+import java.util.Collections;
 import java.util.Map;
 
 import static javax.swing.BorderFactory.createEmptyBorder;
@@ -106,12 +107,14 @@ public class JTerminal extends JScrollPane {
     }
 
     private void disableArrowKeys() {
-        String[] keys = {"UP", "DOWN", "LEFT", "RIGHT", "HOME", "ENTER"};
+        String[] keys = {"UP", "DOWN", "LEFT", "RIGHT", "HOME", "ENTER", "TAB", "shift TAB"};
         for (String key : keys) {
             terminal.getInputMap().put(KeyStroke.getKeyStroke(key), "none");
             getInputMap().put(KeyStroke.getKeyStroke(key), "none");
             getVerticalScrollBar().getInputMap().put(KeyStroke.getKeyStroke(key), "none");
         }
+        terminal.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, Collections.emptySet());
+        terminal.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, Collections.emptySet());
         ActionMap am = getActionMap();
         am.put("scrollDown", new AbstractAction() {
             @Override
