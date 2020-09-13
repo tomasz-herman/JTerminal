@@ -23,6 +23,22 @@ public class NonBufferedTerminalInputStream extends TerminalInputStream {
             buffer.add('\10');
         } else if(e.getKeyCode() == KeyEvent.VK_ESCAPE){
             buffer.add('\33');
+        } else if(e.getKeyCode() == KeyEvent.VK_UP){
+            buffer.add('\33');
+            buffer.add('[');
+            buffer.add('A');
+        } else if(e.getKeyCode() == KeyEvent.VK_DOWN){
+            buffer.add('\33');
+            buffer.add('[');
+            buffer.add('B');
+        } else if(e.getKeyCode() == KeyEvent.VK_RIGHT){
+            buffer.add('\33');
+            buffer.add('[');
+            buffer.add('C');
+        } else if(e.getKeyCode() == KeyEvent.VK_LEFT){
+            buffer.add('\33');
+            buffer.add('[');
+            buffer.add('D');
         } else {
             char c = e.getKeyChar();
             if(c >= 32 && c < 127) {

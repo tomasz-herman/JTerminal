@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.hermant'
-version '0.0.12-pre-alpha'
+version '0.0.13-pre-alpha'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -22,7 +22,9 @@ repositories {
 
 dependencies {
     implementation 'com.hermant:windowbuilder:1.0.2'
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    implementation 'org.apache.commons:commons-lang3:3.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.4.2'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
 }
 
 publishing {
@@ -43,4 +45,8 @@ publishing {
             from(components.java)
         }
     }
+}
+
+test {
+    useJUnitPlatform()
 }

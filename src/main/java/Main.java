@@ -20,6 +20,7 @@ public class Main {
                 int read;
                 try {
                     while((read = in.read()) != -1) {
+//                        System.out.println(read);
                         terminal.getTos().write(read);
                         terminal.getTos().flush();
                     }
@@ -32,6 +33,7 @@ public class Main {
                 int read;
                 while((read = terminal.getTis().read()) != -1) {
                     try {
+//                        System.out.println(read);
                         out.write(read);
                         out.flush();
                     } catch (IOException e) {

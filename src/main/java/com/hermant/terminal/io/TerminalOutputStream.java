@@ -103,8 +103,7 @@ public class TerminalOutputStream extends OutputStream {
                         }
                     }
                 }
-            }
-            else if(b=='\10') {
+            } else if(b=='\b') {
                 if(line.length() > 0) {
                     System.out.println("wrong1");
                     line.deleteCharAt(line.length() - 1);

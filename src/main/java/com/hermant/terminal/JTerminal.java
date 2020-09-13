@@ -6,6 +6,7 @@ import com.hermant.terminal.io.TerminalInputStream;
 import com.hermant.terminal.io.TerminalOutputStream;
 
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
@@ -23,6 +24,7 @@ public class JTerminal extends JScrollPane {
     private TerminalInputStream tis;
     private TerminalOutputStream tos;
     private int verticalScrollBarMaximumValue;
+    private TerminalController controller;
 
     private final JTextArea terminal = new JTextArea(24, 80);
 
@@ -45,6 +47,7 @@ public class JTerminal extends JScrollPane {
         terminal.addKeyListener(tis);
         terminal.setEditable(false);
         terminal.getCaret().setVisible(true);
+        controller = new JTerminalController();
     }
 
     private void createStreams(boolean bufferedInStream, boolean echoToTos) {
@@ -179,6 +182,82 @@ public class JTerminal extends JScrollPane {
 
     public void setSelectionColor(Color color) {
         terminal.setSelectionColor(color);
+    }
+
+    public TerminalController getTerminalController() {
+        return controller;
+    }
+
+    private class JTerminalController implements TerminalController {
+        private int caret = terminal.getCaretPosition();
+        public synchronized void detach(int lines){
+            try {
+                int max = terminal.getLineCount();
+                if(lines > max) lines = max;
+                int offset = terminal.getLineEndOffset(lines - 1);
+                terminal.getDocument().remove(0, offset);
+                caret -= offset;
+                if(caret < 0) caret = 0;
+                updateCaret();
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public synchronized void append(String s){
+            try {
+                if(caret == terminal.getDocument().getLength())
+                    terminal.append(s);
+                else {
+                    int end = Math.min(caret + s.length(), terminal.getDocument().getLength());
+                    terminal.replaceRange(s, caret, end);
+                }
+                moveCaret(s.length());
+            } catch (Error ignored) { }
+        }
+
+        public synchronized void delete(int chars) {
+            int start = caret - chars;
+            if (chars > 0) {
+                if(start < 0) start = 0;
+                terminal.replaceRange(null, start, caret);
+                moveCaret(-chars);
+            } else if(chars < 0) {
+                if(start > terminal.getDocument().getLength()) start = terminal.getDocument().getLength();
+                terminal.replaceRange(null, caret, start);
+            }
+        }
+
+        public synchronized void moveCaret(int offset){
+            caret += offset;
+            if(caret < 0) caret = 0;
+            if(caret > terminal.getDocument().getLength()) caret = terminal.getDocument().getLength();
+            updateCaret();
+        }
+
+        public synchronized void moveCaretToLineStart(){
+            try {
+                int line = terminal.getLineOfOffset(caret);
+                caret = terminal.getLineStartOffset(line);
+                updateCaret();
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public synchronized void moveCaretToLineEnd(){
+            try {
+                int line = terminal.getLineOfOffset(caret);
+                caret = terminal.getLineEndOffset(line);
+                updateCaret();
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
+
+        private void updateCaret() {
+            terminal.setCaretPosition(caret);
+        }
     }
 
     /**
