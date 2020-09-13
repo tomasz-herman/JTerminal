@@ -19,18 +19,7 @@ import static javax.swing.BorderFactory.createEmptyBorder;
 public class JTerminal extends JScrollPane {
 
     private static final String DEFAULT_FONT_NAME = "FiraCode-Regular.ttf";
-    private static final Font DEFAULT_FONT;
-
-    static {
-        Font temp;
-        try (InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream(DEFAULT_FONT_NAME)) {
-            if(stream == null) throw new IOException("Couldn't open stream");
-            temp = Font.createFont(Font.TRUETYPE_FONT, stream);
-        } catch (IOException | FontFormatException e) {
-            temp = new Font(Font.MONOSPACED, Font.PLAIN, 24);
-        }
-        DEFAULT_FONT = temp;
-    }
+    private static final FontProvider DEFAULT_FONT_PROVIDER = new FontProvider(DEFAULT_FONT_NAME);
 
     private TerminalInputStream tis;
     private TerminalOutputStream tos;
@@ -156,7 +145,7 @@ public class JTerminal extends JScrollPane {
     }
 
     public static Font getDefaultFont(int size) {
-        return DEFAULT_FONT.deriveFont((float)size);
+        return DEFAULT_FONT_PROVIDER.getFont(size);
     }
 
     public void removeBorder() {
@@ -170,7 +159,7 @@ public class JTerminal extends JScrollPane {
         @SuppressWarnings("unchecked") // It's always Map<TextAttribute, Object>
         Map<TextAttribute, Object> attributes = (Map<TextAttribute, Object>) terminal.getFont().getAttributes();
         attributes.put(TextAttribute.LIGATURES, TextAttribute.LIGATURES_ON);
-        terminal.setFont(DEFAULT_FONT.deriveFont(attributes));
+        terminal.setFont(terminal.getFont().deriveFont(attributes));
     }
 
     public void setTerminalFont(Font font) {
