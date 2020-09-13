@@ -1,14 +1,16 @@
 package com.hermant.terminal.io;
 
+import com.hermant.terminal.JTerminal;
+import com.hermant.terminal.TerminalController;
+
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 
 public class TerminalOutputStream extends OutputStream {
 
-    private final JTextArea area;
+    private final TerminalController controller;
 
     private final StringBuilder line = new StringBuilder(1024);
     private final StringBuilder buffer = new StringBuilder(8192);
@@ -25,13 +27,13 @@ public class TerminalOutputStream extends OutputStream {
     private final int FRAMES_PER_SECOND = 30;
     private final long SKIP_TICKS = 1000000000 / FRAMES_PER_SECOND;
 
-    public TerminalOutputStream(JTextArea area) {
-        this.area = area;
-        Thread updater = getUpdaterThread(area);
+    public TerminalOutputStream(JTerminal terminal) {
+        this.controller = terminal.getTerminalController();
+        Thread updater = getUpdaterThread(controller);
         updater.start();
     }
 
-    private Thread getUpdaterThread(JTextArea area){
+    private Thread getUpdaterThread(TerminalController controller){
         return new Thread(() -> {
             long lastUpdate = System.nanoTime();
             while(true){
@@ -55,9 +57,9 @@ public class TerminalOutputStream extends OutputStream {
                     }
                     try {
                         SwingUtilities.invokeAndWait(() -> {
-                            appendLinesToTerminal(area, s);
-                            while(lines > MAX_LINES) {
-                                detachLinesFromTerminal(area);
+                            controller.append(s);
+                            while(controller.getLines() > MAX_LINES) {
+                                controller.detach(TRUNK);
                             }
                         });
                     } catch (InterruptedException | InvocationTargetException e) {
@@ -103,21 +105,16 @@ public class TerminalOutputStream extends OutputStream {
                         }
                     }
                 }
+            } else if(b == '\r') {
+               controller.moveCaretToLineStart();
             } else if(b=='\b') {
                 if(line.length() > 0) {
-                    System.out.println("wrong1");
                     line.deleteCharAt(line.length() - 1);
                 } else synchronized (buffer) {
                     if(buffer.length() > 0) {
-                        System.out.println("wrong2");
                         buffer.deleteCharAt(buffer.length() - 1);
                     } else {
-                        Document doc = area.getDocument();
-                        try {
-                            doc.remove(doc.getLength() - 1, 1);
-                        } catch (BadLocationException e) {
-                            e.printStackTrace();
-                        }
+                        controller.moveCaret(-1);
                     }
                 }
             }

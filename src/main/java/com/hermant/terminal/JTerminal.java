@@ -24,7 +24,7 @@ public class JTerminal extends JScrollPane {
     private TerminalInputStream tis;
     private TerminalOutputStream tos;
     private int verticalScrollBarMaximumValue;
-    private TerminalController controller;
+    private final TerminalController controller;
 
     private final JTextArea terminal = new JTextArea(24, 80);
 
@@ -33,6 +33,7 @@ public class JTerminal extends JScrollPane {
     }
 
     public JTerminal(boolean bufferedInStream, boolean echoToTos) {
+        controller = new JTerminalController();
         createStreams(bufferedInStream, echoToTos);
         setupTerminal();
         enableSmartScroll();
@@ -47,14 +48,13 @@ public class JTerminal extends JScrollPane {
         terminal.addKeyListener(tis);
         terminal.setEditable(false);
         terminal.getCaret().setVisible(true);
-        controller = new JTerminalController();
     }
 
     private void createStreams(boolean bufferedInStream, boolean echoToTos) {
         tis = bufferedInStream ?
                 new LineBufferedTerminalInputStream(this, echoToTos):
                 new NonBufferedTerminalInputStream(this, echoToTos);
-        tos = new TerminalOutputStream(terminal);
+        tos = new TerminalOutputStream(this);
     }
 
     /**
@@ -190,6 +190,8 @@ public class JTerminal extends JScrollPane {
 
     private class JTerminalController implements TerminalController {
         private int caret = terminal.getCaretPosition();
+
+        @Override
         public synchronized void detach(int lines){
             try {
                 int max = terminal.getLineCount();
@@ -204,6 +206,7 @@ public class JTerminal extends JScrollPane {
             }
         }
 
+        @Override
         public synchronized void append(String s){
             try {
                 if(caret == terminal.getDocument().getLength())
@@ -216,6 +219,7 @@ public class JTerminal extends JScrollPane {
             } catch (Error ignored) { }
         }
 
+        @Override
         public synchronized void delete(int chars) {
             int start = caret - chars;
             if (chars > 0) {
@@ -228,6 +232,15 @@ public class JTerminal extends JScrollPane {
             }
         }
 
+        @Override
+        public synchronized void setCaret(int pos) {
+            caret = pos;
+            if(caret < 0) caret = 0;
+            if(caret > terminal.getDocument().getLength()) caret = terminal.getDocument().getLength();
+            updateCaret();
+        }
+
+        @Override
         public synchronized void moveCaret(int offset){
             caret += offset;
             if(caret < 0) caret = 0;
@@ -235,6 +248,7 @@ public class JTerminal extends JScrollPane {
             updateCaret();
         }
 
+        @Override
         public synchronized void moveCaretToLineStart(){
             try {
                 int line = terminal.getLineOfOffset(caret);
@@ -245,6 +259,7 @@ public class JTerminal extends JScrollPane {
             }
         }
 
+        @Override
         public synchronized void moveCaretToLineEnd(){
             try {
                 int line = terminal.getLineOfOffset(caret);
@@ -253,6 +268,21 @@ public class JTerminal extends JScrollPane {
             } catch (BadLocationException e) {
                 e.printStackTrace();
             }
+        }
+
+        @Override
+        public synchronized int getLines() {
+            return terminal.getLineCount();
+        }
+
+        @Override
+        public synchronized int getCaret() {
+            return terminal.getCaretPosition();
+        }
+
+        @Override
+        public synchronized String getText() {
+            return terminal.getText();
         }
 
         private void updateCaret() {
