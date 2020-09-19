@@ -69,12 +69,14 @@ public class TerminalOutputStream extends OutputStream {
     public void write(int b) {
         synchronized (buffer) {
             if(b < 32) {
-                if(b=='\n'){
+                if(b == '\n'){
                     buffer.newline();
                 } else if(b == '\r') {
                     buffer.ret();
-                } else if(b=='\b') {
+                } else if(b == '\b') {
                     buffer.back();
+                } else if(b == '\t') {
+                    buffer.tab();
                 }
                 buffer.notify();
                 while(buffer.shouldAutoFlush()) {
@@ -133,6 +135,7 @@ public class TerminalOutputStream extends OutputStream {
         private final StringBuilder buffer = new StringBuilder(65536);
         private int caretOffset = 0;
         private int newline = 0;
+        private int tabLen = 4;
         private boolean flush = false;
 
         public Dump dump() {
@@ -161,6 +164,14 @@ public class TerminalOutputStream extends OutputStream {
 
         public void ret() {
             caretOffset = newline - buffer.length();
+        }
+
+        public void tab() {
+            int lineLen = buffer.length() - newline + caretOffset;
+            int spaces = tabLen - lineLen % tabLen;
+            for (int i = 0; i < spaces; i++) {
+                insert(' ');
+            }
         }
 
         public void back() {
