@@ -11,46 +11,46 @@ public class Main {
         new WindowBuilder()
             .setContentPane(terminal)
             .buildFrame();
-//      terminal.bindToSystemStreams();
-//        for (int i = 0; i < 1000000000; i++) {
-//            System.out.println(i);
-//        }
-        try {
-            ProcessBuilder pb = new ProcessBuilder();
-            pb.environment().put("TERM", "dumb");
-            Process p = pb
-                    .command(new String[] {"/usr/bin/script", "-qfc", "/usr/bin/bash", "/dev/null"})
-                    .start();
-            new Thread(() -> {
-                InputStream in = p.getInputStream();
-                int read;
-                try {
-                    while((read = in.read()) != -1) {
-//                        System.out.println(read);
-                        terminal.getTos().write(read);
-                        terminal.getTos().flush();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }).start();
-            new Thread(() -> {
-                OutputStream out = p.getOutputStream();
-                int read;
-                while((read = terminal.getTis().read()) != -1) {
-                    try {
-//                        System.out.println(read);
-                        out.write(read);
-                        out.flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-            p.waitFor();
-            Runtime.getRuntime().addShutdownHook(new Thread(p::destroy));
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+      terminal.bindToSystemStreams();
+        for (int i = 0; i < 1000000000; i++) {
+            System.out.println(i);
         }
+//        try {
+//            ProcessBuilder pb = new ProcessBuilder();
+//            pb.environment().put("TERM", "dumb");
+//            Process p = pb
+//                    .command(new String[] {"/usr/bin/script", "-qfc", "/usr/bin/bash", "/dev/null"})
+//                    .start();
+//            new Thread(() -> {
+//                InputStream in = p.getInputStream();
+//                int read;
+//                try {
+//                    while((read = in.read()) != -1) {
+////                        System.out.println(read);
+//                        terminal.getTos().write(read);
+//                        terminal.getTos().flush();
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }).start();
+//            new Thread(() -> {
+//                OutputStream out = p.getOutputStream();
+//                int read;
+//                while((read = terminal.getTis().read()) != -1) {
+//                    try {
+////                        System.out.println(read);
+//                        out.write(read);
+//                        out.flush();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }).start();
+//            p.waitFor();
+//            Runtime.getRuntime().addShutdownHook(new Thread(p::destroy));
+//        } catch (IOException | InterruptedException e) {
+//            e.printStackTrace();
+//        }
     }
 }

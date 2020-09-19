@@ -6,6 +6,7 @@ import com.hermant.terminal.TerminalController;
 import javax.swing.*;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 
 public class TerminalOutputStream extends OutputStream {
 
@@ -46,12 +47,18 @@ public class TerminalOutputStream extends OutputStream {
                         dump = buffer.dump();
                         buffer.notify();
                     }
-                    controller.moveCaretToLineStart();
-                    controller.append(dump.string);
-                    controller.moveCaret(dump.caretOffset);
-                    int lines;
-                    while((lines = controller.getLines()) > MAX_LINES) {
-                        controller.detach(lines - MAX_LINES);
+                    try {
+                        SwingUtilities.invokeAndWait(() -> {
+                            controller.moveCaretToLineStart();
+                            controller.append(dump.string);
+                            controller.moveCaret(dump.caretOffset);
+                            int lines;
+                            while((lines = controller.getLines()) > MAX_LINES) {
+                                controller.detach(lines - MAX_LINES);
+                            }
+                        });
+                    } catch (InterruptedException | InvocationTargetException e) {
+                        e.printStackTrace();
                     }
                 }
             }
@@ -75,9 +82,7 @@ public class TerminalOutputStream extends OutputStream {
                 while(buffer.shouldAutoFlush()) {
                     try {
                         buffer.wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                    } catch (InterruptedException ignored) { }
                 }
             } else {
                 buffer.insert((char)b);
