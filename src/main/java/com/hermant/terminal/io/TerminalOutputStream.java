@@ -141,6 +141,7 @@ public class TerminalOutputStream extends OutputStream {
             buffer.setLength(0);
             buffer.append(line);
             newline = 0;
+            flush = false;
             return new Dump(result, caretOffset);
         }
 

@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.hermant'
-version '0.0.22-pre-alpha'
+version '0.0.23-alpha'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
