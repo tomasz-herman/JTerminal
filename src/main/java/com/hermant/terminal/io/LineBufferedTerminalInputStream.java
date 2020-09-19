@@ -32,7 +32,7 @@ public class LineBufferedTerminalInputStream extends TerminalInputStream {
             }
         } else if(e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
             if(!line.isEmpty()) line.removeLast();
-            else buffer.add('\10');
+            else buffer.add('\b');
         } else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C){
             if(echoToTos) Signal.raise(new Signal("INT"));
             else buffer.add('\3');

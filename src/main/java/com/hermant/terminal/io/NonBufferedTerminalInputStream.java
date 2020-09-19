@@ -20,7 +20,13 @@ public class NonBufferedTerminalInputStream extends TerminalInputStream {
             if(echoToTos) Signal.raise(new Signal("INT"));
             else buffer.add('\3');
         } else if(e.getKeyCode() == KeyEvent.VK_BACK_SPACE){
-            buffer.add('\10');
+            buffer.add('\b');
+            if(echoToTos) {
+                terminal.getTos().write('\b');
+                terminal.getTos().write(' ');
+                terminal.getTos().write('\b');
+                terminal.getTos().flush();
+            }
         } else if(e.getKeyCode() == KeyEvent.VK_ESCAPE){
             buffer.add('\33');
         } else if(e.getKeyCode() == KeyEvent.VK_UP){
