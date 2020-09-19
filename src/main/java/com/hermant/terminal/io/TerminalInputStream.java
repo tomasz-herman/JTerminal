@@ -8,12 +8,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public abstract class TerminalInputStream extends InputStream implements KeyListener {
 
     protected final static int EOF = -1;
     private final static int BUFFER_SIZE = 65536;
 
+    protected ExecutorService executor = Executors.newSingleThreadExecutor();
     protected final BlockingQueue<Character> buffer = new ArrayBlockingQueue<>(BUFFER_SIZE);
     protected final JTerminal terminal;
     protected boolean echoToTos;

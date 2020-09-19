@@ -15,18 +15,18 @@ public class NonBufferedTerminalInputStream extends TerminalInputStream {
     public void keyPressed(KeyEvent e) {
         if(e.getKeyCode() == KeyEvent.VK_ENTER){
             buffer.add('\n');
-            if(echoToTos) terminal.getTos().write('\n');
+            if(echoToTos) executor.execute(() -> terminal.getTos().write('\n'));
         } else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C){
             if(echoToTos) Signal.raise(new Signal("INT"));
             else buffer.add('\3');
         } else if(e.getKeyCode() == KeyEvent.VK_BACK_SPACE){
             buffer.add('\b');
-            if(echoToTos) {
+            if(echoToTos) executor.execute(() -> {
                 terminal.getTos().write('\b');
                 terminal.getTos().write(' ');
                 terminal.getTos().write('\b');
                 terminal.getTos().flush();
-            }
+            });
         } else if(e.getKeyCode() == KeyEvent.VK_ESCAPE){
             buffer.add('\33');
         } else if(e.getKeyCode() == KeyEvent.VK_UP){
@@ -53,8 +53,10 @@ public class NonBufferedTerminalInputStream extends TerminalInputStream {
             if(c >= 32 && c < 127) {
                 buffer.add(c);
                 if(echoToTos) {
-                    terminal.getTos().write(c);
-                    terminal.getTos().flush();
+                    executor.execute(() -> {
+                        terminal.getTos().write(c);
+                        terminal.getTos().flush();
+                    });
                 }
             }
 

@@ -27,7 +27,7 @@ public class LineBufferedTerminalInputStream extends TerminalInputStream {
             line.add('\n');
             while(!line.isEmpty()) {
                 char c = line.remove();
-                if(echoToTos) terminal.getTos().write(c);
+                if(echoToTos) executor.execute(() -> terminal.getTos().write(c));
                 buffer.add(c);
             }
         } else if(e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
