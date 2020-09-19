@@ -13,6 +13,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.font.TextAttribute;
 import java.io.*;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
@@ -37,9 +38,9 @@ public class JTerminal extends JScrollPane {
         controller = new JTerminalController();
         createStreams(bufferedInStream, echoToTos);
         setupTerminal();
-        enableSmartScroll();
         enableAutoBorder();
         disableArrowKeys();
+        enableSmartScroll();
     }
 
     private void setupTerminal() {
@@ -48,8 +49,8 @@ public class JTerminal extends JScrollPane {
         terminal.setFont(getDefaultFont(24));
         terminal.addKeyListener(tis);
         terminal.setEditable(false);
-//        terminal.setCaret(new TerminalCaret());
-//        terminal.getCaret().setVisible(true);
+////        terminal.setCaret(new TerminalCaret());
+////        terminal.getCaret().setVisible(true);
         terminal.setTabSize(4);
     }
 
@@ -298,7 +299,7 @@ public class JTerminal extends JScrollPane {
         }
 
         private void updateCaret() {
-            terminal.setCaretPosition(caret);
+            //terminal.setCaretPosition(caret);
         }
     }
 
