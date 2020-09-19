@@ -48,8 +48,9 @@ public class JTerminal extends JScrollPane {
         terminal.setFont(getDefaultFont(24));
         terminal.addKeyListener(tis);
         terminal.setEditable(false);
-        terminal.setCaret(new TerminalCaret());
-        terminal.getCaret().setVisible(true);
+//        terminal.setCaret(new TerminalCaret());
+//        terminal.getCaret().setVisible(true);
+        terminal.setTabSize(4);
     }
 
     private void createStreams(boolean bufferedInStream, boolean echoToTos) {
@@ -147,7 +148,7 @@ public class JTerminal extends JScrollPane {
         System.setIn(tis);
         PrintStream printStream = new PrintStream(tos);
         System.setOut(printStream);
-        System.setErr(printStream);
+       // System.setErr(printStream);
     }
 
     public static Font getDefaultFont(int size) {
@@ -221,7 +222,9 @@ public class JTerminal extends JScrollPane {
                     terminal.replaceRange(s, caret, end);
                 }
                 moveCaret(s.length());
-            } catch (Error ignored) { }
+            } catch (Error e) {
+                e.printStackTrace();
+            }
         }
 
         @Override
@@ -235,6 +238,12 @@ public class JTerminal extends JScrollPane {
                 if(start > terminal.getDocument().getLength()) start = terminal.getDocument().getLength();
                 terminal.replaceRange(null, caret, start);
             }
+        }
+
+        @Override
+        public synchronized void clear() {
+            terminal.setText("");
+            caret = 0;
         }
 
         @Override

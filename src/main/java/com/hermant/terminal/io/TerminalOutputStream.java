@@ -3,26 +3,25 @@ package com.hermant.terminal.io;
 import com.hermant.terminal.JTerminal;
 import com.hermant.terminal.TerminalController;
 
+import javax.swing.*;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 
 public class TerminalOutputStream extends OutputStream {
 
-    private final TerminalController controller;
+    private final OutputStreamBuffer buffer = new OutputStreamBuffer();
 
-    private final StringBuilder line = new StringBuilder(1024);
-    private final StringBuilder buffer = new StringBuilder(8192);
+//    private char[] buff = new char[4096];
 
-    private char[] buff = new char[4096];
-
-    private static final int MAX_LINES = 16384;
-    private static final int TRUNK = 4096;
+    private static final int MAX_LINES = 1000;
     private static final int BUFFER_AUTO_FLUSH_SIZE = 4096;
 
     private final int FRAMES_PER_SECOND = 30;
     private final long SKIP_TICKS = 1000000000 / FRAMES_PER_SECOND;
 
     public TerminalOutputStream(JTerminal terminal) {
-        this.controller = terminal.getTerminalController();
+        TerminalController controller = terminal.getTerminalController();
         Thread updater = getUpdaterThread(controller);
         updater.start();
     }
@@ -33,25 +32,33 @@ public class TerminalOutputStream extends OutputStream {
             while(true){
                 long now = System.nanoTime();
                 long elapsed = now - lastUpdate;
-                if(elapsed > SKIP_TICKS || buffer.length() > BUFFER_AUTO_FLUSH_SIZE){
+                if(elapsed > SKIP_TICKS || buffer.shouldAutoFlush()){
                     //update text area
                     lastUpdate = now;
-                    String s;
+                    OutputStreamBuffer.Dump dump;
                     synchronized (buffer){
-                        while(buffer.length() == 0) {
+                        while(!buffer.shouldFlush()) {
                             try {
                                 buffer.wait();
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
                         }
-                        s = buffer.toString();
-                        buffer.setLength(0);
+                        dump = buffer.dump();
                         buffer.notify();
                     }
-                    controller.append(s);
-                    while(controller.getLines() > MAX_LINES) {
-                        controller.detach(TRUNK);
+                    try {
+                        SwingUtilities.invokeAndWait(() -> {
+                            controller.moveCaretToLineStart();
+                            controller.append(dump.string);
+                            controller.moveCaret(dump.caretOffset);
+                            int lines;
+                            while((lines = controller.getLines()) > MAX_LINES) {
+                                controller.detach(lines - MAX_LINES);
+                            }
+                        });
+                    } catch (InterruptedException | InvocationTargetException e) {
+                        e.printStackTrace();
                     }
                 }
             }
@@ -60,79 +67,129 @@ public class TerminalOutputStream extends OutputStream {
 
     @Override
     public void write(int b) {
-        if(b < 32) {
-            if(b=='\n'){
-                controller.moveCaretToLineEnd();
-                line.append((char)b);
-                synchronized (buffer){
-                    buffer.append(line);
-                    line.setLength(0);
-                    buffer.notify();
-                    while(buffer.length() > BUFFER_AUTO_FLUSH_SIZE) {
-                        try {
-                            buffer.wait();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
+        synchronized (buffer) {
+            if(b < 32) {
+                if(b=='\n'){
+                    buffer.newline();
+                } else if(b == '\r') {
+                    buffer.ret();
+                } else if(b=='\b') {
+                    buffer.back();
                 }
-            } else if(b == '\r') {
-               controller.moveCaretToLineStart();
-            } else if(b=='\b') {
-                if(line.length() > 0) {
-                    line.deleteCharAt(line.length() - 1);
-                } else synchronized (buffer) {
-                    if(buffer.length() > 0) {
-                        buffer.deleteCharAt(buffer.length() - 1);
-                    } else {
-                        controller.moveCaret(-1);
-                    }
-                }
-            }
-        } else {
-            line.append((char)b);
-        }
-    }
-
-    @Override
-    public void write(byte[] b) {
-        write(b, 0, b.length);
-    }
-
-    @Override
-    public void write(byte[] b, int off, int len) {
-        if(buff.length < len) buff = new char[len];
-        int newLines = 0;
-        for (int i = 0; i < len; i++) {
-            buff[i] = (char)b[i + off];
-            if(buff[i] == '\n') newLines++;
-        }
-        line.append(buff, 0, len);
-        if(newLines > 0) {
-            synchronized (buffer){
-                buffer.append(line);
-                line.setLength(0);
                 buffer.notify();
-                while(buffer.length() > BUFFER_AUTO_FLUSH_SIZE) {
+                while(buffer.shouldAutoFlush()) {
                     try {
                         buffer.wait();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
+            } else {
+                buffer.insert((char)b);
             }
         }
     }
 
     @Override
+    public void write(byte[] b) throws IOException {
+        write(b, 0, b.length);
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+        super.write(b, off, len);
+//        if(buff.length < len) buff = new char[len];
+//        int newLines = 0;
+//        for (int i = 0; i < len; i++) {
+//            buff[i] = (char)b[i + off];
+//            if(buff[i] == '\n') newLines++;
+//        }
+//        line.append(buff, 0, len);
+//        if(newLines > 0) {
+//            synchronized (buffer){
+//                buffer.append(line);
+//                line.setLength(0);
+//                buffer.notify();
+//                while(buffer.length() > BUFFER_AUTO_FLUSH_SIZE) {
+//                    try {
+//                        buffer.wait();
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//        }
+    }
+
+    @Override
     public void flush() {
-        if(line.length() == 0) return;
         synchronized (buffer){
-            buffer.append(line);
-            line.setLength(0);
-            controller.append(buffer.toString());
-            buffer.setLength(0);
+            buffer.flush();
+            buffer.notify();
         }
+    }
+
+    private static class OutputStreamBuffer {
+        private final StringBuilder buffer = new StringBuilder(65536);
+        private int caretOffset = 0;
+        private int newline = 0;
+        private boolean flush = false;
+
+        public Dump dump() {
+            String result = buffer.toString();
+            String line = buffer.substring(newline);
+            buffer.setLength(0);
+            buffer.append(line);
+            newline = 0;
+            return new Dump(result, caretOffset);
+        }
+
+        public void insert(char c) {
+            if(caretOffset == 0) {
+                buffer.append(c);
+            } else {
+                buffer.setCharAt(buffer.length() + caretOffset++, c);
+            }
+        }
+
+        public void newline() {
+            caretOffset = 0;
+            insert('\n');
+            newline = buffer.length();
+        }
+
+        public void ret() {
+            caretOffset = newline - buffer.length();
+        }
+
+        public void back() {
+            caretOffset--;
+            caretOffset = Math.max(newline - buffer.length(), caretOffset);
+        }
+
+        public boolean shouldAutoFlush() {
+            return buffer.length() > BUFFER_AUTO_FLUSH_SIZE;
+        }
+
+        public boolean shouldFlush() {
+            return newline > 0 || flush || shouldAutoFlush();
+        }
+
+        public void flush() {
+            if(buffer.length() == 0) return;
+            flush = true;
+        }
+
+        private static final class Dump {
+            public String string;
+            public int caretOffset;
+
+            public Dump(String string, int caretOffset) {
+                this.string = string;
+                this.caretOffset = caretOffset;
+            }
+        }
+
     }
 }
 

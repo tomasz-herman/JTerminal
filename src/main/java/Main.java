@@ -11,8 +11,14 @@ public class Main {
         new WindowBuilder()
             .setContentPane(terminal)
             .buildFrame();
+//      terminal.bindToSystemStreams();
+//        for (int i = 0; i < 1000000000; i++) {
+//            System.out.println(i);
+//        }
         try {
-            Process p = new ProcessBuilder()
+            ProcessBuilder pb = new ProcessBuilder();
+            pb.environment().put("TERM", "dumb");
+            Process p = pb
                     .command(new String[] {"/usr/bin/script", "-qfc", "/usr/bin/bash", "/dev/null"})
                     .start();
             new Thread(() -> {
