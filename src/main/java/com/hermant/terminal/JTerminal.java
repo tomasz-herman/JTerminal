@@ -148,7 +148,7 @@ public class JTerminal extends JScrollPane {
         System.setIn(tis);
         PrintStream printStream = new PrintStream(tos);
         System.setOut(printStream);
-       // System.setErr(printStream);
+        System.setErr(printStream);
     }
 
     public static Font getDefaultFont(int size) {
@@ -222,9 +222,7 @@ public class JTerminal extends JScrollPane {
                     terminal.replaceRange(s, caret, end);
                 }
                 moveCaret(s.length());
-            } catch (Error e) {
-                e.printStackTrace();
-            }
+            } catch (Error ignored) { }
         }
 
         @Override
