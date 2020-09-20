@@ -77,7 +77,7 @@ public class JTerminal extends JScrollPane {
             //If on the bottom just make sure it scrolled to the end
             if ((verticalScrollBarMaximumValue - e.getAdjustable().getMaximum()) == 0) return;
             if (e.getValue() != e.getAdjustable().getMaximum() + e.getAdjustable().getVisibleAmount()) return;
-            e.getAdjustable().setValue(e.getAdjustable().getMaximum());
+            if (getHeight() > 0) e.getAdjustable().setValue(e.getAdjustable().getMaximum());
             verticalScrollBarMaximumValue = getVerticalScrollBar().getMaximum();
         });
         new SmartScroller(this);
