@@ -13,7 +13,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.font.TextAttribute;
 import java.io.*;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
